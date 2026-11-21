@@ -57,6 +57,10 @@ def audit_dist(dist_dir: Path) -> AuditReport:
 
     for path in html_files:
         rel = str(path.relative_to(dist_dir))
+        if path.parent == dist_dir and (
+            path.name.startswith("google") or path.name.startswith("naver")
+        ):
+            continue
         content = path.read_text(encoding="utf-8")
 
         m_title = _TITLE_RE.search(content)

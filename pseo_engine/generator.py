@@ -1199,4 +1199,11 @@ def generate_site(
     if cfg.indexnow_key:
         (dist / f"{cfg.indexnow_key}.txt").write_text(cfg.indexnow_key, encoding="utf-8")
 
+    # 8. 정적 검증 파일 복사 (Google Search Console / 네이버 서치어드바이저 소유권 확인 파일 등)
+    static_dir = cfg.dist_dir.parent / "static"
+    if static_dir.exists() and static_dir.is_dir():
+        for item in static_dir.iterdir():
+            if item.is_file():
+                (dist / item.name).write_bytes(item.read_bytes())
+
     return pages
