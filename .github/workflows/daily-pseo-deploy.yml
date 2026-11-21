@@ -1,6 +1,9 @@
 name: Daily pSEO Data Sync & Deploy
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # 매일 새벽 04:00 KST (19:00 UTC) 무인 자동 갱신 및 배포
     - cron: "0 19 * * *"
