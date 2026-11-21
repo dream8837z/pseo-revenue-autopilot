@@ -89,7 +89,7 @@ def audit_dist(dist_dir: Path) -> AuditReport:
             report.missing_ymyl_disclaimer.append(rel)
 
         # Tool pages must include interactive JS widget to avoid Thin Content penalty
-        if rel.startswith(("deposit/", "saving/", "loan/", "subsidy/", "salary/", "severance/", "realestate/", "auto/", "en/")):
+        if rel.startswith(("deposit/", "saving/", "loan/", "subsidy/", "salary/", "severance/", "realestate/", "auto/", "en/", "tools/", "en-tools/")):
             if "data-widget=" not in content:
                 report.missing_interactive_widget.append(rel)
 
