@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pseo-revenue-autopilot"
+version = "1.0.0"
+description = "공공데이터(금융감독원 금융상품한눈에 + 행안부 보조금24) 기반 완전 자동화 프로그래매틱 SEO 계산기·비교 웹앱 파이프라인"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+pseo-autopilot = "pseo_engine.cli:main"
