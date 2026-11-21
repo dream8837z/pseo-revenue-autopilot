@@ -13,6 +13,14 @@ from pseo_engine.calculators import (
     simulate_pseo_monthly_revenue,
 )
 from pseo_engine.config import SiteConfig
+from pseo_engine.extra_calculators import (
+    calculate_kr_auto_finance,
+    calculate_kr_realestate_cost,
+    calculate_kr_salary,
+    calculate_kr_severance,
+    calculate_usd_compound,
+    calculate_usd_mortgage,
+)
 from pseo_engine.fetchers import fetch_financial_products, fetch_subsidy_programs
 from pseo_engine.generator import generate_site
 from pseo_engine.indexer import submit_indexnow
@@ -57,6 +65,29 @@ class TestCalculators(unittest.TestCase):
             sim["adsense_revenue_krw"] + sim["affiliate_revenue_krw"],
         )
 
+    def test_extra_kr_and_usd_calculators(self) -> None:
+        sal = calculate_kr_salary(50_000_000)
+        self.assertGreater(sal.monthly_net_krw, 3_200_000)
+        self.assertLess(sal.monthly_net_krw, sal.monthly_gross_krw)
+
+        sev = calculate_kr_severance(4_000_000, 5)
+        self.assertGreater(sev["severance_gross_krw"], 18_000_000)
+        self.assertEqual(sev["unemployment_days"], 210)
+
+        re_cost = calculate_kr_realestate_cost(500_000_000, 1)
+        self.assertEqual(re_cost["acq_tax_krw"], 5_000_000)
+        self.assertEqual(re_cost["brokerage_fee_krw"], 2_000_000)
+
+        auto = calculate_kr_auto_finance(30_000_000, 36)
+        self.assertGreater(auto["acq_tax_krw"], 1_800_000)
+        self.assertGreater(auto["monthly_payment_krw"], 650_000)
+
+        us_m = calculate_usd_mortgage(400_000, 30, 6.25)
+        self.assertGreater(us_m["monthly_payment_usd"], 2400)
+
+        us_c = calculate_usd_compound(50_000, 1000, 20, 8.0)
+        self.assertGreater(us_c["future_value_usd"], 800_000)
+
 
 class TestEndToEndBuildAndAudit(unittest.TestCase):
     def test_full_pipeline_generates_and_passes_seo_audit(self) -> None:
@@ -88,7 +119,7 @@ class TestEndToEndBuildAndAudit(unittest.TestCase):
             self.assertGreaterEqual(len(subsidies), 15)
 
             pages = generate_site(cfg, products, subsidies, is_sample_data=True)
-            self.assertGreaterEqual(len(pages), 60)
+            self.assertGreaterEqual(len(pages), 180)
 
             report = audit_dist(cfg.dist_dir)
             self.assertTrue(report.passed, msg=f"SEO Audit failed: {report}")

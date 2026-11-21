@@ -11,6 +11,7 @@ from typing import Any
 
 from pseo_engine.calculators import calculate_deposit, calculate_loan, calculate_saving
 from pseo_engine.config import SiteConfig
+from pseo_engine.extra_pages import EXTRA_WIDGET_JS, generate_extra_pages
 from pseo_engine.fetchers import FinancialProduct, SubsidyProgram
 
 
@@ -480,7 +481,7 @@ th { background: #f1f5f9; font-weight: 700; }
   });
 })();
 """
-    (assets_dir / "app.js").write_text(js, encoding="utf-8")
+    (assets_dir / "app.js").write_text(js + "\n" + EXTRA_WIDGET_JS, encoding="utf-8")
 
 
 def _build_product_table(products: list[FinancialProduct], rate_col_label: str) -> str:
@@ -1047,6 +1048,22 @@ def generate_site(
             )
             pages.append(GeneratedPage(rel_path, url, title, desc, "subsidy"))
 
+    # 4.5. 추가 초고CPC 한국어(연봉·퇴직금·부동산·자동차) + 글로벌 USD(/en/) 계산기 120페이지
+    extra_pages, extra_hubs = generate_extra_pages(
+        cfg,
+        dist,
+        is_sample_data=is_sample_data,
+        base_layout_fn=_base_layout,
+        adsense_slot_fn=_adsense_slot,
+        affiliate_box_fn=_affiliate_box,
+        faq_section_fn=_faq_section,
+        page_cls=GeneratedPage,
+        esc_fn=_esc,
+        fmt_krw_fn=_fmt_krw,
+        fmt_manwon_fn=_fmt_manwon,
+    )
+    pages.extend(extra_pages)
+
     # 5. 필수 신뢰 페이지 (privacy.html, disclaimer.html — 애드센스 심사 통과 필수)
     for rel_path, p_title, p_desc, p_body in [
         (
@@ -1129,6 +1146,31 @@ def generate_site(
 <section class="card" id="subsidy-hub">
   <h2>2026 지역·대상별 보조금24 자격 자가진단기</h2>
   <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in subsidy_links)}</div>
+</section>
+
+<section class="card" id="salary-hub">
+  <h2>2026 연봉 실수령액 계산기 (4대보험·세금)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in extra_hubs["salary"])}</div>
+</section>
+
+<section class="card" id="severance-hub">
+  <h2>퇴직금 · 실업급여 계산기</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in extra_hubs["severance"])}</div>
+</section>
+
+<section class="card" id="realestate-hub">
+  <h2>부동산 취득세 · 중개보수(복비) 계산기</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in extra_hubs["realestate"])}</div>
+</section>
+
+<section class="card" id="auto-hub">
+  <h2>자동차 할부 · 취등록세 계산기</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in extra_hubs["auto"])}</div>
+</section>
+
+<section class="card" id="en-hub">
+  <h2>Global USD Finance Calculators (US Mortgage &amp; Compound Interest)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in extra_hubs["en_global"])}</div>
 </section>
 """
     index_url = f"{cfg.site_url}/index.html"
