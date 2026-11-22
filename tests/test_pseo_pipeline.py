@@ -119,7 +119,7 @@ class TestEndToEndBuildAndAudit(unittest.TestCase):
             self.assertGreaterEqual(len(subsidies), 15)
 
             pages = generate_site(cfg, products, subsidies, is_sample_data=True)
-            self.assertGreaterEqual(len(pages), 235)
+            self.assertGreaterEqual(len(pages), 500)
 
             report = audit_dist(cfg.dist_dir)
             self.assertTrue(report.passed, msg=f"SEO Audit failed: {report}")

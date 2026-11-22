@@ -13,7 +13,9 @@ from pseo_engine.calculators import calculate_deposit, calculate_loan, calculate
 from pseo_engine.config import SiteConfig
 from pseo_engine.extra_pages import EXTRA_WIDGET_JS, generate_extra_pages
 from pseo_engine.fetchers import FinancialProduct, SubsidyProgram
+from pseo_engine.mega_expansion import MEGA_EXPANSION_JS, generate_mega_expansion_pages
 from pseo_engine.public_hubs import PUBLIC_HUBS_JS, generate_public_hub_pages
+from pseo_engine.ultra_expansion import ULTRA_EXPANSION_JS, generate_ultra_expansion_pages
 from pseo_engine.web_tools import TOOLS_JS, generate_web_tool_pages
 
 
@@ -127,7 +129,7 @@ def _base_layout(
   <meta property="og:url" content="{_esc(canonical_url)}">
   <meta property="og:site_name" content="{_esc(cfg.site_name)}">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="{_esc(asset_prefix)}assets/style.css?v=20261122b">
+  <link rel="stylesheet" href="{_esc(asset_prefix)}assets/style.css?v=20261122c">
   {adsense_head}
   {ga4_head}
   {ld_scripts}
@@ -165,7 +167,7 @@ def _base_layout(
       </p>
     </div>
   </footer>
-  <script src="{_esc(asset_prefix)}assets/app.js?v=20261122b" defer></script>
+  <script src="{_esc(asset_prefix)}assets/app.js?v=20261122c" defer></script>
 </body>
 </html>
 """
@@ -606,7 +608,17 @@ tbody tr:hover { background: var(--primary-soft); }
 })();
 """
     (assets_dir / "app.js").write_text(
-        js + "\n" + EXTRA_WIDGET_JS + "\n" + TOOLS_JS + "\n" + PUBLIC_HUBS_JS,
+        js
+        + "\n"
+        + EXTRA_WIDGET_JS
+        + "\n"
+        + TOOLS_JS
+        + "\n"
+        + PUBLIC_HUBS_JS
+        + "\n"
+        + MEGA_EXPANSION_JS
+        + "\n"
+        + ULTRA_EXPANSION_JS,
         encoding="utf-8",
     )
 
@@ -1218,6 +1230,36 @@ def generate_site(
     )
     pages.extend(pub_pages)
 
+    # 4.8. 메가 확장: 한국 세금(증여·종소세·양도세) + 생활금융 + 글로벌 USD 프로 (+120p)
+    mega_pages, mega_hubs = generate_mega_expansion_pages(
+        cfg,
+        dist,
+        is_sample_data=is_sample_data,
+        base_layout_fn=_base_layout,
+        adsense_slot_fn=_adsense_slot,
+        affiliate_box_fn=_affiliate_box,
+        faq_section_fn=_faq_section,
+        page_cls=GeneratedPage,
+        esc_fn=_esc,
+        fmt_manwon_fn=_fmt_manwon,
+    )
+    pages.extend(mega_pages)
+
+    # 4.9. 울트라 확장: 투자·복리·물타기 + 평수·마진·건강(BMI/TDEE) (+150p -> 총 500p+)
+    ultra_pages, ultra_hubs = generate_ultra_expansion_pages(
+        cfg,
+        dist,
+        is_sample_data=is_sample_data,
+        base_layout_fn=_base_layout,
+        adsense_slot_fn=_adsense_slot,
+        affiliate_box_fn=_affiliate_box,
+        faq_section_fn=_faq_section,
+        page_cls=GeneratedPage,
+        esc_fn=_esc,
+        fmt_manwon_fn=_fmt_manwon,
+    )
+    pages.extend(ultra_pages)
+
     # 5. 필수 신뢰 페이지 (privacy.html, disclaimer.html — 애드센스 심사 통과 필수)
     for rel_path, p_title, p_desc, p_body in [
         (
@@ -1356,6 +1398,31 @@ def generate_site(
 <section class="card" id="medical-hub">
   <h2>2026 비급여 진료비 안내 &amp; 4세대 실손보험 환급액 계산기 (심평원 API)</h2>
   <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in pub_hubs["medical"])}</div>
+</section>
+
+<section class="card" id="tax-hub">
+  <h2>2026 증여세 · 프리랜서 3.3% 종소세 · 양도소득세 계산기 (40종)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in mega_hubs["tax"])}</div>
+</section>
+
+<section class="card" id="life-hub">
+  <h2>국민연금 · 해외직구 관부가세 · 전월세 전환율 계산기 (36종)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in mega_hubs["life"])}</div>
+</section>
+
+<section class="card" id="invest-hub">
+  <h2>적립식 복리(S&amp;P500·배당) · 주식 물타기 평단가 계산기 (50종)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in ultra_hubs["invest"])}</div>
+</section>
+
+<section class="card" id="convert-hub">
+  <h2>아파트 평수(㎡) · 마진율 · BMI·칼로리(TDEE) 변환기 (100종)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in ultra_hubs["convert"])}</div>
+</section>
+
+<section class="card" id="en-pro-hub">
+  <h2>Global USD Pro Calculators (US Auto Loan, Hourly Salary, SaaS LTV:CAC)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in mega_hubs["en_pro"])}</div>
 </section>
 """
     index_url = f"{cfg.site_url}/index.html"
