@@ -72,13 +72,13 @@ class SiteConfig:
             adsense_client_id=os.environ.get("ADSENSE_CLIENT_ID", "").strip(),
             ga4_measurement_id=os.environ.get("GA4_MEASUREMENT_ID", "").strip(),
             affiliate_deposit_url=os.environ.get(
-                "AFFILIATE_DEPOSIT_URL", f"{site_url}/#deposit-hub"
+                "AFFILIATE_DEPOSIT_URL", "https://link.coupang.com/a/iSVpT5nClE"
             ).strip(),
             affiliate_loan_url=os.environ.get(
-                "AFFILIATE_LOAN_URL", f"{site_url}/#loan-hub"
+                "AFFILIATE_LOAN_URL", "https://link.coupang.com/a/iSVq4TcSLA"
             ).strip(),
             affiliate_subsidy_url=os.environ.get(
-                "AFFILIATE_SUBSIDY_URL", f"{site_url}/#subsidy-hub"
+                "AFFILIATE_SUBSIDY_URL", "https://link.coupang.com/a/iSVrev2q5s"
             ).strip(),
             indexnow_key=os.environ.get("INDEXNOW_KEY", "fintoollab8837indexnow2026key99").strip(),
             enable_indexnow=_env_bool("ENABLE_INDEXNOW", True),

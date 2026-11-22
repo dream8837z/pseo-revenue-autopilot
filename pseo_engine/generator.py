@@ -67,11 +67,11 @@ def _adsense_slot(cfg: SiteConfig, slot_label: str) -> str:
 def _affiliate_box(title: str, subtitle: str, cta_label: str, href: str) -> str:
     return f"""
 <aside class="affiliate-card" data-compliance="economic-disclosure">
-  <div class="affiliate-badge">제휴 파트너 안내</div>
+  <div class="affiliate-badge">쿠팡 파트너스 추천 · 제휴 안내</div>
   <h3>{_esc(title)}</h3>
   <p>{_esc(subtitle)}</p>
-  <a class="btn-cta" href="{_esc(href)}" rel="nofollow sponsored noopener" target="_blank">{_esc(cta_label)} →</a>
-  <p class="disclosure-note">※ 본 영역은 제휴 링크를 포함하고 있으며, 신청 또는 가입 시 일정액의 제휴 수수료를 제공받을 수 있습니다. (공정위 표시광고법 고지)</p>
+  <a class="btn-cta" href="{_esc(href)}" rel="nofollow sponsored noopener" target="_blank">{_esc(cta_label)} (쿠팡 특가 바로가기) →</a>
+  <p class="disclosure-note">※ 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다. (공정위 표시광고법 경제적 이해관계 고지)</p>
 </aside>
 """
 
@@ -1325,6 +1325,13 @@ def generate_site(
 
 {_adsense_slot(cfg, "home-top")}
 
+{_affiliate_box(
+    "오늘의 쿠팡 골드박스 · 로켓배송 생활비 절약 특가 모음",
+    "금융·세금·보조금 계산과 함께 매일 업데이트되는 생필품·가전·디지털 로켓배송 초특가 할인을 확인하세요.",
+    "오늘의 쿠팡 골드박스 초특가 확인하기",
+    cfg.affiliate_subsidy_url,
+)}
+
 <section class="card" id="deposit-hub">
   <h2>정기예금 금액·기간별 세후 이자 계산기</h2>
   <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in deposit_links)}</div>
@@ -1493,11 +1500,38 @@ def generate_site(
     if cfg.indexnow_key:
         (dist / f"{cfg.indexnow_key}.txt").write_text(cfg.indexnow_key, encoding="utf-8")
 
-    # 8. 정적 검증 파일 복사 (Google Search Console / 네이버 서치어드바이저 소유권 확인 파일 등)
+    # 8. 정적 검증 파일 및 AI 검색 인용 파일(llms.txt, llms-full.txt) 복사
     static_dir = cfg.dist_dir.parent / "static"
     if static_dir.exists() and static_dir.is_dir():
         for item in static_dir.iterdir():
             if item.is_file():
                 (dist / item.name).write_bytes(item.read_bytes())
+
+    # 9. Stage 3 Zero-Cost AI Referrer & First/Last-Touch Attribution Hook自动주입
+    app_js_path = dist / "assets" / "app.js"
+    if app_js_path.is_file():
+        attr_js = """
+;(function(){
+  try {
+    var ref = (document.referrer || '').toLowerCase();
+    var params = new URLSearchParams(window.location.search);
+    var ch = params.get('utm_source') || 'direct_or_organic';
+    if (ref.indexOf('chatgpt.com') >= 0 || ref.indexOf('openai.com') >= 0) ch = 'ai_chatgpt_search';
+    else if (ref.indexOf('perplexity.ai') >= 0) ch = 'ai_perplexity';
+    else if (ref.indexOf('claude.ai') >= 0) ch = 'ai_claude';
+    else if (ref.indexOf('gemini.google.com') >= 0) ch = 'ai_gemini';
+    else if (ref.indexOf('search.naver.com') >= 0) ch = 'seo_naver';
+    else if (ref.indexOf('google.') >= 0) ch = 'seo_google';
+    if (!localStorage.getItem('bm_first_channel')) localStorage.setItem('bm_first_channel', ch);
+    localStorage.setItem('bm_last_channel', ch);
+    window.__BORING_ATTRIBUTION__ = {
+      first_touch: localStorage.getItem('bm_first_channel'),
+      last_touch: ch,
+      hook_id: params.get('utm_content') || 'organic_aio'
+    };
+  } catch (e) {}
+})();
+"""
+        app_js_path.write_text(app_js_path.read_text(encoding="utf-8") + attr_js, encoding="utf-8")
 
     return pages

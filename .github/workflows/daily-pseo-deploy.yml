@@ -42,9 +42,9 @@ jobs:
           DATA_GO_KR_API_KEY: ${{ secrets.DATA_GO_KR_API_KEY }}
           ADSENSE_CLIENT_ID: ${{ secrets.ADSENSE_CLIENT_ID }}
           GA4_MEASUREMENT_ID: ${{ secrets.GA4_MEASUREMENT_ID }}
-          AFFILIATE_DEPOSIT_URL: ${{ secrets.AFFILIATE_DEPOSIT_URL }}
-          AFFILIATE_LOAN_URL: ${{ secrets.AFFILIATE_LOAN_URL }}
-          AFFILIATE_SUBSIDY_URL: ${{ secrets.AFFILIATE_SUBSIDY_URL }}
+          AFFILIATE_DEPOSIT_URL: ${{ secrets.AFFILIATE_DEPOSIT_URL || 'https://link.coupang.com/a/iSVpT5nClE' }}
+          AFFILIATE_LOAN_URL: ${{ secrets.AFFILIATE_LOAN_URL || 'https://link.coupang.com/a/iSVq4TcSLA' }}
+          AFFILIATE_SUBSIDY_URL: ${{ secrets.AFFILIATE_SUBSIDY_URL || 'https://link.coupang.com/a/iSVrev2q5s' }}
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY || 'fintoollab8837indexnow2026key99' }}
           ENABLE_INDEXNOW: ${{ vars.ENABLE_INDEXNOW || 'true' }}
         run: python3 -m pseo_engine run
