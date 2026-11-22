@@ -13,6 +13,7 @@ from pseo_engine.calculators import calculate_deposit, calculate_loan, calculate
 from pseo_engine.config import SiteConfig
 from pseo_engine.extra_pages import EXTRA_WIDGET_JS, generate_extra_pages
 from pseo_engine.fetchers import FinancialProduct, SubsidyProgram
+from pseo_engine.public_hubs import PUBLIC_HUBS_JS, generate_public_hub_pages
 from pseo_engine.web_tools import TOOLS_JS, generate_web_tool_pages
 
 
@@ -126,7 +127,7 @@ def _base_layout(
   <meta property="og:url" content="{_esc(canonical_url)}">
   <meta property="og:site_name" content="{_esc(cfg.site_name)}">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="{_esc(asset_prefix)}assets/style.css?v=20261122">
+  <link rel="stylesheet" href="{_esc(asset_prefix)}assets/style.css?v=20261122b">
   {adsense_head}
   {ga4_head}
   {ld_scripts}
@@ -164,7 +165,7 @@ def _base_layout(
       </p>
     </div>
   </footer>
-  <script src="{_esc(asset_prefix)}assets/app.js?v=20261122" defer></script>
+  <script src="{_esc(asset_prefix)}assets/app.js?v=20261122b" defer></script>
 </body>
 </html>
 """
@@ -604,7 +605,10 @@ tbody tr:hover { background: var(--primary-soft); }
   });
 })();
 """
-    (assets_dir / "app.js").write_text(js + "\n" + EXTRA_WIDGET_JS + "\n" + TOOLS_JS, encoding="utf-8")
+    (assets_dir / "app.js").write_text(
+        js + "\n" + EXTRA_WIDGET_JS + "\n" + TOOLS_JS + "\n" + PUBLIC_HUBS_JS,
+        encoding="utf-8",
+    )
 
 
 def _build_product_table(products: list[FinancialProduct], rate_col_label: str) -> str:
@@ -1200,6 +1204,20 @@ def generate_site(
     )
     pages.extend(tool_pages)
 
+    # 4.7. 4갈래 실시간 공공데이터 허브 (국토부 아파트 실거래가 · 청약홈 · K-Startup · 심평원 비급여 = 30페이지)
+    pub_pages, pub_hubs, _pub_sources = generate_public_hub_pages(
+        cfg,
+        dist,
+        is_sample_data=is_sample_data,
+        base_layout_fn=_base_layout,
+        adsense_slot_fn=_adsense_slot,
+        affiliate_box_fn=_affiliate_box,
+        faq_section_fn=_faq_section,
+        page_cls=GeneratedPage,
+        esc_fn=_esc,
+    )
+    pages.extend(pub_pages)
+
     # 5. 필수 신뢰 페이지 (privacy.html, disclaimer.html — 애드센스 심사 통과 필수)
     for rel_path, p_title, p_desc, p_body in [
         (
@@ -1318,6 +1336,26 @@ def generate_site(
 <section class="card" id="en-tools-hub">
   <h2>Free Online Web Utilities &amp; Converters (Global English Studio)</h2>
   <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in tool_links_en)}</div>
+</section>
+
+<section class="card" id="apt-hub">
+  <h2>2026 지역별 아파트 매매 실거래가 실시간 조회 (국토교통부 API)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in pub_hubs["apt"])}</div>
+</section>
+
+<section class="card" id="cheongyak-hub">
+  <h2>2026 전국 청약홈 분양 일정 &amp; 84점 청약가점 계산기 (한국부동산원 API)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in pub_hubs["cheongyak"])}</div>
+</section>
+
+<section class="card" id="startup-hub">
+  <h2>2026 K-Startup 정부 창업·소상공인 지원사업 실시간 공고 (창업진흥원 API)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in pub_hubs["startup"])}</div>
+</section>
+
+<section class="card" id="medical-hub">
+  <h2>2026 비급여 진료비 안내 &amp; 4세대 실손보험 환급액 계산기 (심평원 API)</h2>
+  <div class="link-grid">{"".join(f'<a class="link-pill" href="{_esc(href)}">{_esc(lbl)}</a>' for lbl, href in pub_hubs["medical"])}</div>
 </section>
 """
     index_url = f"{cfg.site_url}/index.html"
