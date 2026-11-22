@@ -65,13 +65,20 @@ def _adsense_slot(cfg: SiteConfig, slot_label: str) -> str:
 
 
 def _affiliate_box(title: str, subtitle: str, cta_label: str, href: str) -> str:
+    is_coupang = "coupang.com" in href
+    badge = "쿠팡 파트너스 추천 · 제휴 안내" if is_coupang else "제휴 파트너 추천 · 혜택 안내"
+    disclosure = (
+        "※ 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."
+        if is_coupang
+        else "※ 본 영역은 제휴(텐핑 등) 광고 링크를 포함하며, 신청·가입 시 일정액의 수수료를 제공받을 수 있습니다. (공정위 표시광고법 고지)"
+    )
     return f"""
 <aside class="affiliate-card" data-compliance="economic-disclosure">
-  <div class="affiliate-badge">쿠팡 파트너스 추천 · 제휴 안내</div>
+  <div class="affiliate-badge">{badge}</div>
   <h3>{_esc(title)}</h3>
   <p>{_esc(subtitle)}</p>
-  <a class="btn-cta" href="{_esc(href)}" rel="nofollow sponsored noopener" target="_blank">{_esc(cta_label)} (쿠팡 특가 바로가기) →</a>
-  <p class="disclosure-note">※ 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다. (공정위 표시광고법 경제적 이해관계 고지)</p>
+  <a class="btn-cta" href="{_esc(href)}" rel="nofollow sponsored noopener" target="_blank">{_esc(cta_label)} →</a>
+  <p class="disclosure-note">{disclosure}</p>
 </aside>
 """
 

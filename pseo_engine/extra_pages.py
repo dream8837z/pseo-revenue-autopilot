@@ -222,7 +222,7 @@ def generate_extra_pages(
     <div class="metric-box highlight"><div class="metric-label">예상 월 실수령액</div><div class="metric-value" data-out="net">{fmt_krw_fn(res.monthly_net_krw)}</div></div>
   </div>
 </section>
-{affiliate_box_fn("직장인 연말정산 절세·신용대출 금리 비교", "연봉 구간에 맞는 세액공제(IRP·연금저축) 및 직장인 우대금리 혜택을 확인하세요.", "절세·금융 혜택 비교하기", cfg.affiliate_loan_url)}
+{affiliate_box_fn("발급 조건 없는 연회비 무료 머니트리카드 (소득공제 30%)", "연봉 실수령액 절약과 첫 결제 혜택까지! 발급 조건 없이 누구나 간편 신청할 수 있습니다.", "머니트리카드 무료 발급 신청하기", "https://iryan.kr/t8hdd04j25")}
 {adsense_slot_fn(cfg, "salary-mid")}
 {faq_html}
 <section class="card"><h2>다른 연봉 구간 실수령액 계산기</h2><div class="link-grid">{related}</div></section>
@@ -368,7 +368,7 @@ def generate_extra_pages(
     <div class="metric-box"><div class="metric-label">총 할부 이자</div><div class="metric-value" data-out="interest">{fmt_krw_fn(res['total_interest_krw'])}</div></div>
   </div>
 </section>
-{affiliate_box_fn("다이렉트 자동차보험 & 신차 오토할부·장기렌트 최저가 비교", "출고 전 필수인 다이렉트 자동차보험료와 장기렌트 월 납입금을 1분 만에 비교하세요.", "자동차보험·장기렌트 견적 비교", cfg.affiliate_loan_url)}
+{affiliate_box_fn("신차 장기렌트·오토리스 전 렌트사 최저가 1분 비교 (ONEPICK)", "초기 취등록세·보험료 부담 없이 전국 렌트사 월 납입금을 한 번에 비교해 보세요.", "신차 장기렌트 최저가 무료 상담", "https://iryan.kr/t8hdd04rss")}
 {faq_html}
 <section class="card"><h2>다른 차량가·할부기간 계산기</h2><div class="link-grid">{related}</div></section>
 """
