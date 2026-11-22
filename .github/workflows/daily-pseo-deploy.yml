@@ -32,7 +32,7 @@ jobs:
       - name: Fetch public APIs, build pSEO site & run SEO audit
         env:
           DRY_RUN: "false"
-          SITE_NAME: ${{ vars.SITE_NAME || '머니핀랩 - 금융·보조금 실시간 계산기' }}
+          SITE_NAME: ${{ vars.SITE_NAME || '핀툴랩(FinToolLab) - 금융·부동산·세금·웹도구 올인원 허브' }}
           SITE_URL: ${{ vars.SITE_URL || 'https://dream8837z.github.io/pseo-revenue-autopilot' }}
           CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL || 'contact@example.com' }}
           FINLIFE_API_KEY: ${{ secrets.FINLIFE_API_KEY }}

@@ -60,11 +60,11 @@ class SiteConfig:
         if not dist_dir.is_absolute():
             dist_dir = root / dist_dir
         return cls(
-            site_name=os.environ.get("SITE_NAME", "머니핀랩 - 금융·보조금 실시간 계산기"),
+            site_name=os.environ.get("SITE_NAME", "핀툴랩(FinToolLab) - 금융·부동산·세금·웹도구 올인원 허브"),
             site_url=site_url,
             site_description=os.environ.get(
                 "SITE_DESCRIPTION",
-                "금융감독원·행정안전부 공공데이터 기반 예적금·대출 이자 계산기 및 2026 정부지원금 자격 진단 허브",
+                "6대 공공데이터 실시간 연동 예적금·대출·실거래가·청약·세금·보조금24 및 무료 웹 유틸리티 505종 올인원 허브",
             ),
             contact_email=os.environ.get("CONTACT_EMAIL", "contact@example.com"),
             finlife_api_key=os.environ.get("FINLIFE_API_KEY", "").strip(),
