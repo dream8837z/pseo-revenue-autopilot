@@ -45,8 +45,8 @@ jobs:
           AFFILIATE_DEPOSIT_URL: ${{ secrets.AFFILIATE_DEPOSIT_URL }}
           AFFILIATE_LOAN_URL: ${{ secrets.AFFILIATE_LOAN_URL }}
           AFFILIATE_SUBSIDY_URL: ${{ secrets.AFFILIATE_SUBSIDY_URL }}
-          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
-          ENABLE_INDEXNOW: ${{ vars.ENABLE_INDEXNOW || 'false' }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY || 'fintoollab8837indexnow2026key99' }}
+          ENABLE_INDEXNOW: ${{ vars.ENABLE_INDEXNOW || 'true' }}
         run: python3 -m pseo_engine run
 
       - name: Keep-Alive monthly sync heartbeat (prevents GitHub 60-day cron pause)

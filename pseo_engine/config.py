@@ -80,8 +80,8 @@ class SiteConfig:
             affiliate_subsidy_url=os.environ.get(
                 "AFFILIATE_SUBSIDY_URL", f"{site_url}/#subsidy-hub"
             ).strip(),
-            indexnow_key=os.environ.get("INDEXNOW_KEY", "").strip(),
-            enable_indexnow=_env_bool("ENABLE_INDEXNOW", False),
+            indexnow_key=os.environ.get("INDEXNOW_KEY", "fintoollab8837indexnow2026key99").strip(),
+            enable_indexnow=_env_bool("ENABLE_INDEXNOW", True),
             data_dir=data_dir,
             dist_dir=dist_dir,
             dry_run=_env_bool("DRY_RUN", True),
