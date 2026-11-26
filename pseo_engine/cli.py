@@ -9,6 +9,15 @@ import socketserver
 import sys
 from pathlib import Path
 
+from datetime import datetime, timezone
+
+from pseo_engine.autopilot_brain import (
+    HealthReport,
+    check_affiliate_links,
+    save_last_good_snapshot,
+    track_evolution,
+    write_health_outputs,
+)
 from pseo_engine.calculators import simulate_pseo_monthly_revenue
 from pseo_engine.config import SiteConfig
 from pseo_engine.fetchers import fetch_financial_products, fetch_subsidy_programs
@@ -21,17 +30,62 @@ def cmd_run(cfg: SiteConfig) -> int:
     products, fin_src = fetch_financial_products(cfg)
     subsidies, sub_src = fetch_subsidy_programs(cfg)
     is_sample = fin_src.startswith("seed_") or sub_src.startswith("seed_")
+
+    # 1) Save last-good live snapshots for future outage self-healing
+    if not fin_src.startswith("seed_"):
+        save_last_good_snapshot(cfg.data_dir, "finlife", [p.__dict__ for p in products], fin_src)
+    if not sub_src.startswith("seed_"):
+        save_last_good_snapshot(cfg.data_dir, "subsidy24", [s.__dict__ for s in subsidies], sub_src)
+
+    # 2) Affiliate LinkGuard: verify CPA & Coupang links and auto-heal dead links
+    link_map = {
+        "coupang_deposit": cfg.affiliate_deposit_url,
+        "coupang_loan": cfg.affiliate_loan_url,
+        "coupang_subsidy": cfg.affiliate_subsidy_url,
+        "tenping_auto_rent": "https://iryan.kr/t8hdd04rss",
+        "tenping_money_card": "https://iryan.kr/t8hdd04j25",
+    }
+    _resolved_links, link_healths, healed_events = check_affiliate_links(
+        link_map,
+        fallback_url="https://link.coupang.com/a/iSVpT5nClE",
+        dry_run=cfg.dry_run,
+    )
+
     pages = generate_site(cfg, products, subsidies, is_sample_data=is_sample)
     report = audit_dist(cfg.dist_dir)
     index_result = submit_indexnow(cfg, [p.url for p in pages])
 
-    print(f"[1/4] 금융 데이터 수집 완료: {len(products)}건 ({fin_src})")
-    print(f"[2/4] 보조금 데이터 수집 완료: {len(subsidies)}건 ({sub_src})")
-    print(f"[3/4] pSEO 정적 사이트 빌드 완료: {len(pages)}개 페이지 -> {cfg.dist_dir}")
+    # 3) Self-Evolution tracking (detect new high-rate / new subsidy items vs previous run)
+    highlights = [f"[금리] {p.bank_name} {p.product_name} ({p.max_rate_pct:.2f}%)" for p in products[:5]] + [
+        f"[보조금] {s.title} ({s.agency})" for s in subsidies[:5]
+    ]
+    new_evo = track_evolution(cfg.data_dir, highlights)
+
+    overall = "HEALTHY" if (report.passed and not healed_events) else ("DEGRADED" if report.passed else "CRITICAL")
+    health = HealthReport(
+        checked_at_utc=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        overall_status=overall,
+        api_sources={"finlife": fin_src, "subsidy24": sub_src},
+        api_counts={"finlife": len(products), "subsidy24": len(subsidies)},
+        link_checks=link_healths,
+        total_pages=len(pages),
+        seo_audit_passed=report.passed,
+        evolution_new_items=new_evo,
+        self_healed_events=healed_events,
+    )
+    status_path = write_health_outputs(cfg.data_dir, cfg.dist_dir, health, cfg.site_name)
+
+    print(f"[1/5] 금융 데이터 수집 완료: {len(products)}건 ({fin_src})")
+    print(f"[2/5] 보조금 데이터 수집 완료: {len(subsidies)}건 ({sub_src})")
+    print(f"[3/5] pSEO 정적 사이트 빌드 완료: {len(pages)}개 페이지 -> {cfg.dist_dir}")
     print(
-        f"[4/4] SEO 품질 감사: {'PASS' if report.passed else 'FAIL'} "
+        f"[4/5] SEO 품질 감사: {'PASS' if report.passed else 'FAIL'} "
         f"(HTML {report.total_html_pages}개, 깨진 링크 {len(report.broken_internal_links)}건, "
         f"중복 제목 {len(report.duplicate_titles)}건)"
+    )
+    print(
+        f"[5/5] 자가진단·진화 리포트: {overall} | 제휴 링크 {sum(1 for l in link_healths if l.alive)}/{len(link_healths)} 정상 "
+        f"| 신규 탐지 {len(new_evo)}건 -> {status_path}"
     )
     print(f"      IndexNow: {index_result['message']}")
     return 0 if report.passed else 1

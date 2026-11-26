@@ -144,6 +144,42 @@ class TestEndToEndBuildAndAudit(unittest.TestCase):
             self.assertEqual(idx["mode"], "dry_run")
             self.assertEqual(idx["count"], len(pages))
 
+            # Verify Self-Diagnostics, LinkGuard & Self-Evolution Brain
+            from pseo_engine.autopilot_brain import (
+                HealthReport,
+                check_affiliate_links,
+                load_last_good_snapshot,
+                save_last_good_snapshot,
+                track_evolution,
+                write_health_outputs,
+            )
+
+            save_last_good_snapshot(cfg.data_dir, "finlife", [{"bank": "KB"}], "live_test")
+            snap = load_last_good_snapshot(cfg.data_dir, "finlife")
+            self.assertIsNotNone(snap)
+            assert snap is not None
+            self.assertEqual(len(snap[0]), 1)
+
+            resolved, lchecks, healed = check_affiliate_links(
+                {"a": "https://example.com/ok"}, fallback_url="https://example.com/fb", dry_run=True
+            )
+            self.assertEqual(resolved["a"], "https://example.com/ok")
+            self.assertEqual(healed, [])
+
+            evo1 = track_evolution(cfg.data_dir, ["itemA", "itemB"])
+            self.assertEqual(evo1, ["itemA", "itemB"])
+            evo2 = track_evolution(cfg.data_dir, ["itemA", "itemC"])
+            self.assertEqual(evo2, ["itemC"])
+
+            hpath = write_health_outputs(
+                cfg.data_dir,
+                cfg.dist_dir,
+                HealthReport("2026-11-26T13:00:00Z", "HEALTHY", {"finlife": "live"}, {"finlife": 10}, lchecks, len(pages), True, evo2, []),
+                cfg.site_name,
+            )
+            self.assertTrue(hpath.exists())
+            self.assertIn("HEALTHY", hpath.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
