@@ -44,6 +44,11 @@ jobs:
           AFFILIATE_SUBSIDY_URL: ${{ secrets.AFFILIATE_SUBSIDY_URL || 'https://link.coupang.com/a/iSVrev2q5s' }}
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY || 'fintoollab8837indexnow2026key99' }}
           ENABLE_INDEXNOW: ${{ vars.ENABLE_INDEXNOW || 'true' }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          ENABLE_X_AUTOPOST: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
         run: python3 -m pseo_engine run
 
       - name: Keep-Alive monthly sync heartbeat (prevents GitHub 60-day cron pause)

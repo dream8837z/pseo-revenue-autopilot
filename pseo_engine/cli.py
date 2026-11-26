@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import functools
 import http.server
+import os
 import socketserver
 import sys
 from pathlib import Path
@@ -24,6 +25,7 @@ from pseo_engine.fetchers import fetch_financial_products, fetch_subsidy_program
 from pseo_engine.generator import generate_site
 from pseo_engine.indexer import submit_indexnow
 from pseo_engine.seo_audit import audit_dist
+from pseo_engine.social_poster import compose_daily_briefing, post_to_x
 
 
 def cmd_run(cfg: SiteConfig) -> int:
@@ -88,6 +90,21 @@ def cmd_run(cfg: SiteConfig) -> int:
         f"| 신규 탐지 {len(new_evo)}건 -> {status_path}"
     )
     print(f"      IndexNow: {index_result['message']}")
+    if os.environ.get("ENABLE_X_AUTOPOST", "").strip().lower() in {"1", "true", "yes"}:
+        top_p = max(products, key=lambda x: x.max_rate_pct, default=None)
+        top_s = subsidies[0] if subsidies else None
+        rate_line = (
+            f"오늘의 최고 금리: {top_p.bank_name} {top_p.product_name} (최고 연 {top_p.max_rate_pct:.2f}%)"
+            if top_p
+            else "6대 공공 API 금리·실거래가 실시간 업데이트 완료"
+        )
+        sub_line = (
+            f"핵심 지원금: {top_s.title} ({top_s.agency})"
+            if top_s
+            else "2026 보조금24·청약홈·K-Startup 공고 최신화 완료"
+        )
+        x_res = post_to_x(compose_daily_briefing(cfg.site_url, rate_line, sub_line), dry_run=cfg.dry_run)
+        print(f"      X Auto-Post: {x_res}")
     return 0 if report.passed else 1
 
 
